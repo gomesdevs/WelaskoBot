@@ -6,6 +6,7 @@ from speaker import Speaker
 import argparse
 import logging
 import os
+import sys
 
 coloredlogsError = None
 try:
@@ -66,9 +67,9 @@ def main():
     global speakerbot
     
     parser = argparse.ArgumentParser(description='A Telegram markov bot.')
-    parser.add_argument('token', metavar='TOKEN',
+    parser.add_argument('token', metavar='TOKEN', nargs='?',
                         help='The Bot Token to work with the Telegram Bot API')
-    parser.add_argument('admin_id', metavar='ADMIN_ID', type=int, default=0,
+    parser.add_argument('admin_id', metavar='ADMIN_ID', type=int, nargs='?', default=0,
                         help='The ID of the Telegram user that manages this bot')
     parser.add_argument('-w', '--wakeup', action='store_true',
                         help='Flag that makes the bot send a first message to all chats during wake up.')
@@ -90,6 +91,20 @@ def main():
                         help='The maximum value for a chat\'s period. (default: 100000)')
 
     args = parser.parse_args()
+
+    # Usar variáveis de ambiente se argumentos não forem fornecidos
+    if not args.token:
+        args.token = os.getenv('BOT_TOKEN')
+    if not args.admin_id:
+        args.admin_id = int(os.getenv('ADMIN_ID', 0))
+    
+    if not args.token:
+        logger.error("Token não fornecido! Use argumentos ou defina BOT_TOKEN como variável de ambiente.")
+        return
+    
+    if not args.admin_id:
+        logger.error("Admin ID não fornecido! Use argumentos ou defina ADMIN_ID como variável de ambiente.")
+        return
 
     # Criar diretório se não existir
     if not os.path.exists(args.directory):
